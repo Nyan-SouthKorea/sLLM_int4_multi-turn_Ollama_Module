@@ -1,0 +1,17 @@
+FROM llama-3-Korean-Bllossom-8B-Q4_K_M.gguf
+
+TEMPLATE """{{- if .System }}
+<s>{{ .System }}</s>
+{{- end }}
+<s>Human:
+{{ .Prompt }}</s>
+<s>Assistant:
+"""
+
+SYSTEM """You are a helpful AI Assistant. Please answer the user's questions kindly. 당신은 유능한 AI 어시스턴트 입니다. 사용자의 질문에 대해 친절하게 답변해주세요."""
+
+PARAMETER temperature 0
+PARAMETER num_predict 3000
+PARAMETER num_ctx 4096
+PARAMETER stop <s>
+PARAMETER stop </s>

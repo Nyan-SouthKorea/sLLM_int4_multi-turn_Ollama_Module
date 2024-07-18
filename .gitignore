@@ -1,0 +1,9 @@
+# weight파일
+*.pt
+*.gguf
+*.safetensors
+
+# 미디어
+*.mp4
+*.wav
+*.mp3
