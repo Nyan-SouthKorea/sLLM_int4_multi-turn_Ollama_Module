@@ -14,7 +14,7 @@ text_file_path = "for_rag.txt"  # 파일 경로 설정
 documents = TextLoader(text_file_path, encoding='utf-8').load()
 
 # 문서 청크로 분할
-def split_docs(documents, chunk_size=1000, chunk_overlap=20):
+def split_docs(documents, chunk_size=100, chunk_overlap=10):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     docs = text_splitter.split_documents(documents)
     return docs
@@ -91,11 +91,11 @@ class Ollama_int4_sLLM:
     def process_query(self, query, session_id):
         matching_docs = db.similarity_search(query)
         if matching_docs:  # 만약 관련성이 있는 문서가 있다면
-            # answer = qa_chain.invoke({'input_documents':matching_docs, 'question':query}, return_only_outputs=True)['output_text']
+            answer = qa_chain.invoke({'input_documents':matching_docs, 'question':query}, return_only_outputs=True)['output_text']
             # answer = qa_chain.run(input_documents=matching_docs, question=query)
-            # print(f'AI 답변: {answer}')
-            for chunk in qa_chain.stream({'input_documents':matching_docs, 'question':query}):
-                print(chunk)
+            print(f'AI 답변: {answer}')
+            # for chunk in qa_chain.stream({'input_documents':matching_docs, 'question':query}):
+                # print(chunk)
             
             
         else:  # 관련성이 있는 문서가 없다면 일반적인 대화 진행

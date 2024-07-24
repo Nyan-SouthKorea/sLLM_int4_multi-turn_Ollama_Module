@@ -1,5 +1,6 @@
-school time : Monday, Wednesday, Friday 1:30 PM
+name: 라이언
+age: 29살
+job: AI 엔지니어
+name of company: 에브리봇 주식회사
+favorite things: 여름에 물놀이, 겨울에 스키, 가을에 패러글라이딩, 봄에 꽃놀이
 
-meal time : breakfast 7:00 AM, lunch 12:30 PM, dinner 18:30 PM
-
-아이의 이름 : 김철수

@@ -88,7 +88,7 @@ class Ollama_int4_sLLM:
         if session_id not in self.store:
             self.store[session_id] = InMemoryChatMessageHistory()
         return self.store[session_id]
-    
+
     def _remove_words(self, txt):
         for word in self.remove_word_list:
             # 해당 단어를 삭제하고, 이중 공백이 있을 경우 정리(단어가 없어도 에러가 발생하진 않는다)
