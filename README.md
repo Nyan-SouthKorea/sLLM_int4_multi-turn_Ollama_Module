@@ -32,14 +32,55 @@ sLLM으로 Multi-Turn을 구현하고, RAG를 섞어서 사용자와 자연스�
 
 ## 2. 한국어로 Fine Tuning
 
-Llama3 8B 모델의 다국어 점수가 낮기 때문에 한국어로 Fine Tuning이 필요합니다. 저는 이미 한국어로 잘 Fine Tuned 된 모델을 허깅 페이스에서 찾았습니다.
+Llama3 8B 모델의 다국어 점수가 낮기 때문에 한국어로 Fine Tuning이 필요합니다. 아래와 같이 직접 Full Fine Tuning하는 방법도 있겠지만, 본 레포지토리에서는 이미 한국어로 잘 Fine Tuned 된 모델을 허깅 페이스에서 찾는 방향으로 진행하였습니다.
+```python
+# 7-2. Trainer class 정의
+
+trainer = transformers.Trainer(
+        model=model,
+        train_dataset=train_data,
+        eval_dataset=val_data,
+        args=transformers.TrainingArguments( # 훈련에 이용될 하이퍼파라미터
+            per_device_train_batch_size = micro_batch,
+            gradient_accumulation_steps = gradient_accumulation_steps,
+            warmup_ratio=warmup_ratio,
+            num_train_epochs=num_epochs,
+            learning_rate=learning_rate,
+            fp16=True,
+            logging_steps=1,
+            optim="adamw_torch",
+            evaluation_strategy="no",
+            save_strategy="steps",
+            max_grad_norm = max_grad_norm,
+            save_steps = 30, # you can change!
+            lr_scheduler_type=lr_scheduler,
+            output_dir=output_dir,
+            save_total_limit=2,
+            load_best_model_at_end=False,
+            ddp_find_unused_parameters=False,
+            group_by_length = False
+        ),
+        data_collator=transformers.DataCollatorForSeq2Seq(
+            tokenizer, pad_to_multiple_of=8, return_tensors="pt", padding=True
+        ),
+    )
+
+model.config.use_cache = False
+model.print_trainable_parameters() # 훈련하는 파라미터의 % 체크
+
+if torch.__version__ >= "2" and sys.platform != "win32":
+    model = torch.compile(model)
+
+torch.cuda.empty_cache()
+trainer.train(resume_from_checkpoint=resume_from_checkpoint)
+```
 
 [한국어 Fine Tuned 모델](https://huggingface.co/MLP-KTLim/llama-3-Korean-Bllossom-8B)
 
 ## 3. FP16 -> INT4 양자화
 
 Floating Point 16 모델을 INT4로 양자화하여 추론 속도를 최대 4배 이상 빠르게 할 수 있습니다. 
-Huggingface에 보면 여러 LLM 모델들이 있습니다. 이 모델들은 safetensors로 저장되어 있는 경우가 많습니다. 오늘은 이런 safetensors 모델을 16bit로 gguf 변환을 한 다음에 int4로 양자화하는 과정을 거쳐보도록 하겠습니다. 물론 그 중간에 원본 모델을 추론해 보고, 최종 4bit 모델도 추론해 보도록 하겠습니다.
+본 레포지토리에서는 양자화 되어 있는 모델을 별도로 찾아서 사용했지만, 양자화 모델이 없는 경우를 대비하기 위해 기본적으로 Floating Point 16 모델을 INT4로 변환하는 방법을 안내하고 넘어가도록 하겠습니다.
 
 (gguf : Georgi Gerganov Unified Format의 약자로 오픈소스 모델을 로컬 환경에서 쉽고 빠르게 실행할 수 있는 파일 형식)
 
@@ -389,8 +430,12 @@ if __name__ == '__main__':
     sys.exit(app.exec_())
 ```
 
-## 기타. RAG vs Instruction
-사용자 정보는 RAG 방식으로 관리하는 것이 대화의 지속성과 정보의 유지 측면에서 더 유리합니다.  
+## 인사이트 1. RAG vs Instruction
+사용자 정보는 RAG 방식으로 관리하는 것이 대화의 지속성과 정보의 유지 측면에서 더 유리합니다. Instruction에 사용자의 정보를 넣게 되면, 대화가 쌓임에 따라 정보를 잊어버리는 현상을 확인했습니다. 잊어버림과 동시에 할루시네이션 현상이 동반되어 이상한 정보를 알려주는 것이 확인되었기 때문에, 정보성 데이터는 RAG를 이용해 구현하는 것을 추천합니다.
+
+## 인사이트 2. RAG는...그냥 되는 것이 아니다
+RAG의 경우 데이터를 어떻게 chunk로 나눌 것인가, 그리고 그 chunk들 간에 얼마나 내용이 겹치게 할 것인가를 설정하여 자른 다음에 벡터화 시켜서 DB에 저장하게 됩니다. 이 과정에서 만약 chunk가 잘 못 잘렸을 경우에 LLM에게 "라면 만드는 방법이 뭐야?"라고 물어보았을 경우, LLM은 "자. 라면 만드는 레시피를 알려드리겠습니다." 하고 끝날 수 있다는 겁니다. 왜냐하면 라면 만드는 방법이랑 가장 유사한 텍스트를 불러와서 답변을 생성했지만, 정작 chunk가 잘 못 잘렸기 때문에, 아래 나와있는 방법을 알 수 없는 겁니다.
+이러한 문제들 관련하여 RAG에 사용될 데이터를 전처리 하는데 정말 많은 노하우와 반복성 작업이 필요해 보인다고 느꼈습니다.
 
 ## 향후 계획
 이번 연구를 통해 sLLM으로 Multi-Turn을 구현하고, RAG를 통합하여 사용자와 자연스러운 대화를 할 수 있는 GUI 기반의 챗봇 에이전트를 성공적으로 개발하였습니다.
