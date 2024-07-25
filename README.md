@@ -4,8 +4,10 @@
 
 sLLM으로 Multi-Turn을 구현하고, RAG를 섞어서 사용자와 자연스러운 대화를 해줄 수 있는 GUI 기반의 챗봇 에이전트를 개발했습니다. 인스트럭션을 통해 인격 또한 부여할 수 있으며, 저의 이름을 사전에 등록하여 "라이언"이라는 아이를 돌보아주는 키즈케어 로봇 페르소나를 적용해 보았습니다.
 
-또한 INT4로 양자화되었기 때문에 테스트 결과 RTX3060에서 ChatGPT-4보다 빠른 추론 속도를 보여줍니다. (Llama 3 8B)
-![alt text](readme_imgs/01.png)
+또한 INT4로 양자화되었기 때문에 테스트 결과 RTX3060에서 ChatGPT-4보다 빠른 추론 속도를 보여줍니다. (Llama 3 8B)  
+  
+(이미지 클릭 시 영상으로 이동)  
+[![alt text](https://img.youtube.com/vi/ScMD64Kkbus/0.jpg)](https://www.youtube.com/watch?v=ScMD64Kkbus)  
 
 ## 과정 설명
 
@@ -259,6 +261,9 @@ def _get_instruct(self):
 LangChain을 통해 Multi-Turn 대화와 RAG를 통합하여 하나의 모듈로 구현했습니다.
 [LangChain 공식 사이트](https://www.langchain.com/)
 
+(이미지 클릭 시 영상으로 이동)  
+[![alt text](https://img.youtube.com/vi/sL4Q9bR2FGs/0.jpg)](https://www.youtube.com/watch?v=sL4Q9bR2FGs)  
+
 ```python
 from langchain_community.chat_models import ChatOllama
 from langchain_core.chat_history import BaseChatMessageHistory, InMemoryChatMessageHistory
@@ -272,6 +277,11 @@ response = self.with_message_history.invoke([HumanMessage(content=human_message)
 
 ## 6. RAG 구축
 RAG 시스템을 사용하여 정보들을 벡터화하고, 검색 및 증강하여 답변을 생성합니다.
+
+(이미지 클릭 시 영상으로 이동)  
+[![alt text](https://img.youtube.com/vi/e-kZljGkFs0/0.jpg)](https://www.youtube.com/watch?v=e-kZljGkFs0)  
+
+
 ```python
 from langchain.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -302,6 +312,11 @@ qa_chain = load_qa_chain(llm, chain_type="stuff", verbose=False)
 
 ## 7. 대화 GUI 모듈 개발
 PyQT5를 사용하여 간단한 GUI를 개발했습니다.
+
+(이미지 클릭 시 영상으로 이동)  
+[![alt text](https://img.youtube.com/vi/44JFK6VS1aE/0.jpg)](https://www.youtube.com/watch?v=44JFK6VS1aE)  
+
+
 ```python
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QTextEdit, QPushButton
