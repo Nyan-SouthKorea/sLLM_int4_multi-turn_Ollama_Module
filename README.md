@@ -143,6 +143,7 @@ for _ in range(2048):  # Maximum number of tokens to generate
 spent = time.time() - start
 print(f'시간 측정: {int(spent)}')
 ```
+이렇게 추론된 결과는 매우 느립니다. 1 토큰 당 0.3초 이상이 소요되며, 이 속도로는 On-Device를 고려할 수 없는 상태입니다.
 
 ### 양자화 프로세스
 현재 fp16 모델을 int4로 줄여야 합니다. 전체 과정을 한 번에 진행하지는 않았기 때문에 먼저 순서에 대해서 설명하겠습니다. 이 방법이 정답은 아니고 참고한 자료가 있습니다. 양자화 진행 순서는 아래와 같습니다:
@@ -176,7 +177,7 @@ git clone https://github.com/ggerganov/llama.cpp.git
 cd llama.cpp
 pip install -r requirements.txt
 ```
-이제 아래 명령어를 입력하오 모델을 fp16으로 변환합니다.
+이제 아래 명령어를 입력하고 모델을 fp16으로 변환합니다.
 ```bash
 python convert_hf_to_gguf.py --outtype f16 --verbose /path/to/your/model
 ```
@@ -239,7 +240,6 @@ ollama create llama3-ko -f Modelfile
 ollama run llama3-ko
 ```
 
-문제가 있다면 피드백 주시면 감사하겠습니다.
 
 ## 4. 인스트럭션 튜닝
 
